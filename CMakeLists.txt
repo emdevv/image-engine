@@ -5,7 +5,10 @@ set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # Source files
-file(GLOB APP_SOURCES ${CMAKE_SOURCE_DIR}/src/*.cpp)
+file(GLOB APP_SOURCES 
+    "${CMAKE_SOURCE_DIR}/src/*.cpp"
+    "${CMAKE_SOURCE_DIR}/src/ops/*.cpp"
+)
 
 # ImGui (core only for now – no GLFW/OpenGL backends)
 set(IMGUI_DIR ${CMAKE_SOURCE_DIR}/external/imgui)
