@@ -1,11 +1,12 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "load_image.h"
+#include "image.h"
 #include <iostream>
 #include <stb_image.h>
 #include <stdexcept>
 
-LoadedImage load_image(const std::string &filepath) {
-  LoadedImage img;
+Image load_image(const std::string &filepath) {
+  Image img;
 
   // force RGBA
   unsigned char *data =
