@@ -1,5 +1,5 @@
 #include "image.h"
-#include "crop.h"
+#include "ops.h"
 
 Image::Image() {}
 Image::Image(int w, int h, int c, std::vector<unsigned char> p)
