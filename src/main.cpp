@@ -10,7 +10,7 @@ int main(int argc, char **argv) {
 
   std::string filepath = argv[1];
   Image img = load_image(filepath);
-  img.crop(2, 3, 4, 5);
+  img.crop(30, 100, 310, 280);
 
   std::cout << "Image loaded: " << img.width << "x" << img.height << "\n";
 

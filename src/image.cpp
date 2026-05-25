@@ -6,4 +6,6 @@ Image::Image(int w, int h, int c, std::vector<unsigned char> p)
     : width(w), height(h), pixels(p) {}
 Image::~Image() {}
 
-void Image::crop(int x, int y, int w, int h) { CropOp::apply(*this); }
+void Image::crop(int crop_x, int crop_y, int crop_w, int crop_h) {
+  CropOp::apply(*this, crop_x, crop_y, crop_w, crop_h);
+}
