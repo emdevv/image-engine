@@ -10,29 +10,12 @@ int main(int argc, char **argv) {
 
   std::string filepath = argv[1];
   Image img = load_image(filepath);
+  display_image(img);
   img.crop(30, 100, 310, 280);
 
   std::cout << "Image loaded: " << img.width << "x" << img.height << "\n";
 
-  // Create SFML window
-  sf::RenderWindow window(sf::VideoMode(800, 600), "Image Viewer");
-
-  // Create SFML texture from your LoadedImage
-  sf::Texture texture;
-  texture.create(img.width, img.height);
-  texture.update(img.pixels.data());
-
-  while (window.isOpen()) {
-    sf::Event event;
-    while (window.pollEvent(event)) {
-      if (event.type == sf::Event::Closed)
-        window.close();
-    }
-
-    window.clear(sf::Color::Black);
-    display_image(window, texture);
-    window.display();
-  }
+  display_image(img);
 
   return 0;
 }
