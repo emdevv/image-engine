@@ -1,51 +1,65 @@
+#include "CLI11.hpp"
 #include "display_image.h"
 #include "load_image.h"
 #include <SFML/Graphics.hpp>
 #include <iostream>
 
 int main(int argc, char **argv) {
-  if (argc < 3) {
-    std::cout << "Usage ./image-engine <image_path> <crop>\n";
-  }
+  CLI::App app{"SFML Image Engine"};
+  app.require_subcommand(1); // Forces user to pick crop, blur, or rotate
 
-  std::string filepath = argv[1];
-  std::string operation = argv[2];
+  // 1. Global Option (Every command needs an image path)
+  std::string filepath;
+  app.add_option("filepath", filepath, "Path to the image file")
+      ->required()
+      ->check(CLI::ExistingFile); // Automatically checks if file exists!
 
+  // 2. Crop Subcommand
+  auto *crop_cmd = app.add_subcommand("crop", "Crop the image");
+  int cx = 0, cy = 0, cw = 0, ch = 0;
+  crop_cmd->add_option("x", cx, "X coordinate")->required();
+  crop_cmd->add_option("y", cy, "Y coordinate")->required();
+  crop_cmd->add_option("width", cw, "Width")->required();
+  crop_cmd->add_option("height", ch, "Height")->required();
+
+  // 3. Blur Subcommand
+  auto *blur_cmd = app.add_subcommand("blur", "Blur the image");
+  int blur_percentage = 0;
+  blur_cmd->add_option("percentage", blur_percentage, "Blur percentage (0-100)")
+      ->required();
+
+  // 4. Rotate Subcommand
+  auto *rotate_cmd = app.add_subcommand("rotate", "Rotate the image");
+  int angle = 0;
+  rotate_cmd->add_option("angle", angle, "Rotation angle (90, 180, 270)")
+      ->required();
+
+  // Parse the CLI arguments. If the user passes wrong inputs,
+  // CLI11 prints an error and safely exits here.
+  CLI11_PARSE(app, argc, argv);
+
+  // --- Core Execution Logic ---
   Image img = load_image(filepath);
+  std::cout << "Original Image loaded: " << img.width << "x" << img.height
+            << "\n";
 
-  if (operation == "crop") {
-    if (argc < 7) {
-      std::cout << "Crop op should have 4 inputs x,y,w,h \n";
-      return 0;
-    } else {
-      display_image(img);
-      img.crop(std::stoi(argv[3]), std::stoi(argv[4]), std::stoi(argv[5]),
-               std::stoi(argv[6]));
-      // img.crop(30, 100, 310, 280);
-    }
+  // Show initial image
+  display_image(img);
+
+  if (crop_cmd->parsed()) {
+    std::cout << "Applying crop...\n";
+    img.crop(cx, cy, cw,
+             ch); // No std::stoi needed! CLI11 already converted it to ints.
+  } else if (blur_cmd->parsed()) {
+    std::cout << "Applying blur...\n";
+    img.blur(blur_percentage);
+  } else if (rotate_cmd->parsed()) {
+    std::cout << "Applying rotate...\n";
+    img.rotate(angle);
   }
 
-  if (operation == "blur") {
-    if (argc < 4) {
-      std::cout << "Blur op should have one input: <blur_precentage> \n";
-      return 0;
-    } else {
-      display_image(img);
-      img.blur(std::stoi(argv[3]));
-    }
-  }
-
-  if (operation == "rotate") {
-    if (argc < 4) {
-      std::cout << "Roatate op should have one input: <angle> \n";
-      return 0;
-    } else {
-      display_image(img);
-      img.rotate(std::stoi(argv[3]));
-    }
-  }
-
-  std::cout << "Image loaded: " << img.width << "x" << img.height << "\n";
+  std::cout << "Processed Image size: " << img.width << "x" << img.height
+            << "\n";
   display_image(img);
 
   return 0;

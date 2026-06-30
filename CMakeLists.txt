@@ -28,6 +28,7 @@ add_executable(image-engine
 target_include_directories(image-engine PRIVATE
     ${CMAKE_SOURCE_DIR}/include
     ${CMAKE_SOURCE_DIR}/external/stb
+    ${CMAKE_SOURCE_DIR}/external/CLI11
     ${IMGUI_DIR}
 )
 
