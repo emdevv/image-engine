@@ -25,6 +25,16 @@ int main(int argc, char **argv) {
     }
   }
 
+  if (operation == "blur") {
+    if (argc < 4) {
+      std::cout << "Blur op should have one input: <blur_precentage> \n";
+      return 0;
+    } else {
+      display_image(img);
+      img.blur(std::stoi(argv[3]));
+    }
+  }
+
   std::cout << "Image loaded: " << img.width << "x" << img.height << "\n";
   display_image(img);
 

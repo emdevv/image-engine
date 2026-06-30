@@ -8,6 +8,7 @@ public:
   ~Image();
 
   void crop(int x, int y, int w, int h);
+  void blur(int blur);
 
   int width, height, channels;
   std::vector<unsigned char> pixels;
