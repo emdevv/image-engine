@@ -9,6 +9,7 @@ public:
 
   void crop(int x, int y, int w, int h);
   void blur(int blur);
+  void rotate(int angle);
 
   int width, height, channels;
   std::vector<unsigned char> pixels;
