@@ -12,4 +12,4 @@ void Image::crop(int crop_x, int crop_y, int crop_w, int crop_h) {
 
 void Image::blur(int blur) { BlurOp::apply(*this, blur); }
 
-// continue with main and try if it's works
+void Image::rotate(int angle) { RotateOp::apply(*this, angle); }

@@ -9,3 +9,8 @@ class BlurOp {
 public:
   static void apply(Image &img, int blur);
 };
+
+class RotateOp {
+public:
+  static void apply(Image &img, int angle);
+};

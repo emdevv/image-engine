@@ -35,6 +35,16 @@ int main(int argc, char **argv) {
     }
   }
 
+  if (operation == "rotate") {
+    if (argc < 4) {
+      std::cout << "Roatate op should have one input: <angle> \n";
+      return 0;
+    } else {
+      display_image(img);
+      img.rotate(std::stoi(argv[3]));
+    }
+  }
+
   std::cout << "Image loaded: " << img.width << "x" << img.height << "\n";
   display_image(img);
 
