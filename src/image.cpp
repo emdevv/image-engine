@@ -9,3 +9,7 @@ Image::~Image() {}
 void Image::crop(int crop_x, int crop_y, int crop_w, int crop_h) {
   CropOp::apply(*this, crop_x, crop_y, crop_w, crop_h);
 }
+
+void Image::blur(int blur) { BlurOp::apply(*this, blur); }
+
+// continue with main and try if it's works
