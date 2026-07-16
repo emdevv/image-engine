@@ -34,6 +34,10 @@ int main(int argc, char **argv) {
   rotate_cmd->add_option("angle", angle, "Rotation angle (90, 180, 270)")
       ->required();
 
+  // 5. Convolution Subcommand
+  auto *convolution_cmd =
+      app.add_subcommand("convolution", "Convolution to image");
+
   // Parse the CLI arguments. If the user passes wrong inputs,
   // CLI11 prints an error and safely exits here.
   CLI11_PARSE(app, argc, argv);
@@ -56,6 +60,10 @@ int main(int argc, char **argv) {
   } else if (rotate_cmd->parsed()) {
     std::cout << "Applying rotate...\n";
     img.rotate(angle);
+  } else if (convolution_cmd->parsed()) {
+    std::cout << "Applying convolutuion...\n";
+    img.convolution(
+        {{-1.f, -1.f, -1.f}, {-1.f, 8.f, -1.f}, {-1.f, -1.f, -1.f}});
   }
 
   std::cout << "Processed Image size: " << img.width << "x" << img.height

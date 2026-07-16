@@ -14,3 +14,8 @@ class RotateOp {
 public:
   static void apply(Image &img, int angle);
 };
+
+class ConvolutionOp {
+public:
+  static void apply(Image &img, std::vector<std::vector<float>> kernel);
+};

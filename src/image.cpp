@@ -1,5 +1,6 @@
 #include "image.h"
 #include "ops.h"
+#include <vector>
 
 Image::Image() {}
 Image::Image(int w, int h, int c, std::vector<unsigned char> p)
@@ -13,3 +14,7 @@ void Image::crop(int crop_x, int crop_y, int crop_w, int crop_h) {
 void Image::blur(int blur) { BlurOp::apply(*this, blur); }
 
 void Image::rotate(int angle) { RotateOp::apply(*this, angle); }
+
+void Image::convolution(std::vector<std::vector<float>> kernel) {
+  ConvolutionOp::apply(*this, kernel);
+}
