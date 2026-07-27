@@ -1,7 +1,7 @@
 #include "display_image.h"
 #include <SFML/Graphics.hpp>
 
-void display_image(Image &img) {
+void display_image(const Image &img) {
 
   // Create SFML window
   sf::RenderWindow window(sf::VideoMode(800, 600), "Image Viewer");
@@ -25,8 +25,7 @@ void display_image(Image &img) {
     sf::Vector2u winSize = window.getSize();
     sf::Vector2u imgSize = texture.getSize();
 
-    sprite.setPosition((winSize.x - imgSize.x) * 0.5f,
-                       (winSize.y - imgSize.y) * 0.5f);
+    sprite.setPosition((winSize.x - imgSize.x) * 0.5f, (winSize.y - imgSize.y) * 0.5f);
 
     window.draw(sprite);
     window.display();
