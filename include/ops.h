@@ -1,4 +1,8 @@
+#pragma once
+
 #include "image.h"
+#include "types.h"
+#include <string>
 
 class CropOp {
 public:
@@ -12,7 +16,12 @@ public:
 
 class RotateOp {
 public:
-  static void apply(Image &img, int angle);
+  int angle;
+
+  RotateOp(int a) : angle(a) {}
+
+  void apply_native(Image &img);
+  void apply_kernel(Image &img);
 };
 
 class ConvolutionOp {

@@ -1,0 +1,6 @@
+BasedOnStyle: LLVM
+SortIncludes: Never
+ColumnLimit: 150
+AllowShortEnumsOnASingleLine: false
+
+AlwaysBreakTemplateDeclarations: Yes

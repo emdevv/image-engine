@@ -1,16 +1,15 @@
-#include "image.h"
 #include "ops.h"
+#include "image.h"
+#include <sycl/sycl.hpp>
 #include <stdexcept>
-#include <vector>
 
-void RotateOp::apply(Image &img, int angle) {
+void RotateOp::apply_native(Image &img) {
   // Normalize angle to handle negative numbers or numbers > 360 (e.g., -90
   // becomes 270)
   angle = ((angle % 360) + 360) % 360;
 
   if (angle != 90 && angle != 180 && angle != 270 && angle != 0) {
-    throw std::invalid_argument(
-        "Only 90, 180, and 270 degree rotations are supported right now!");
+    throw std::invalid_argument("Only 90, 180, and 270 degree rotations are supported right now!");
   }
 
   if (angle == 0)
@@ -51,6 +50,65 @@ void RotateOp::apply(Image &img, int angle) {
   }
 
   // Update the image object
+  img.pixels = std::move(rotated_pixels);
+  img.width = new_w;
+  img.height = new_h;
+}
+
+void RotateOp::apply_kernel(Image &img) {
+  int local_angle = ((angle % 360) + 360) % 360;
+  if (local_angle == 0)
+    return;
+
+  const int channels = 4;
+  const int img_w = img.width;
+  const int img_h = img.height;
+
+  int new_w = (local_angle == 180) ? img_w : img_h;
+  int new_h = (local_angle == 180) ? img_h : img_w;
+
+  std::vector<unsigned char> rotated_pixels(new_w * new_h * channels);
+  sycl::queue q(sycl::default_selector_v);
+
+  std::cout << "[SYCL Info] Execution on: " << q.get_device().get_info<sycl::info::device::name>()
+            << " | Type: " << (q.get_device().is_gpu() ? "GPU" : "CPU") << std::endl;
+
+  {
+    sycl::buffer<unsigned char, 1> input_buf(img.pixels.data(), sycl::range<1>(img.pixels.size()));
+    sycl::buffer<unsigned char, 1> output_buf(rotated_pixels.data(), sycl::range<1>(rotated_pixels.size()));
+
+    q.submit([&](sycl::handler &cgh) {
+      sycl::accessor in(input_buf, cgh, sycl::read_only);
+      sycl::accessor out(output_buf, cgh, sycl::write_only);
+
+      cgh.parallel_for(sycl::range<2>(new_h, new_w), [=](sycl::id<2> idx) {
+        int out_y = idx[0];
+        int out_x = idx[1];
+
+        int in_x = 0;
+        int in_y = 0;
+
+        if (local_angle == 90) {
+          in_x = out_y;
+          in_y = img_w - 1 - out_x;
+        } else if (local_angle == 180) {
+          in_x = img_w - 1 - out_x;
+          in_y = img_h - 1 - out_y;
+        } else if (local_angle == 270) {
+          in_x = img_h - 1 - out_y;
+          in_y = out_x;
+        }
+
+        size_t orig_idx = (size_t)(in_y * img_w + in_x) * channels;
+        size_t new_idx = (size_t)(out_y * new_w + out_x) * channels;
+
+        for (int c = 0; c < channels; ++c) {
+          out[new_idx + c] = in[orig_idx + c];
+        }
+      });
+    });
+  }
+
   img.pixels = std::move(rotated_pixels);
   img.width = new_w;
   img.height = new_h;
