@@ -1,6 +1,5 @@
 #include "ops.h"
 #include "image.h"
-#include <sycl/sycl.hpp>
 #include <stdexcept>
 
 void RotateOp::apply_native(Image &img) {
@@ -55,32 +54,34 @@ void RotateOp::apply_native(Image &img) {
   img.height = new_h;
 }
 
-void RotateOp::apply_kernel(Image &img) {
+void RotateOp::apply_kernel(Image &img, sycl::queue &q) {
+  // 1. Normalize angle
   int local_angle = ((angle % 360) + 360) % 360;
   if (local_angle == 0)
     return;
 
+  // 2. Setup Dimensions
   const int channels = 4;
   const int img_w = img.width;
   const int img_h = img.height;
-
   int new_w = (local_angle == 180) ? img_w : img_h;
   int new_h = (local_angle == 180) ? img_h : img_w;
 
+  // 3. Prepare result buffer
   std::vector<unsigned char> rotated_pixels(new_w * new_h * channels);
-  sycl::queue q(sycl::default_selector_v);
 
-  std::cout << "[SYCL Info] Execution on: " << q.get_device().get_info<sycl::info::device::name>()
-            << " | Type: " << (q.get_device().is_gpu() ? "GPU" : "CPU") << std::endl;
-
+  // 4. Submit to SYCL queue
   {
+    // Buffers manage the data transfer between host (CPU) and device (GPU/CPU)
     sycl::buffer<unsigned char, 1> input_buf(img.pixels.data(), sycl::range<1>(img.pixels.size()));
     sycl::buffer<unsigned char, 1> output_buf(rotated_pixels.data(), sycl::range<1>(rotated_pixels.size()));
 
     q.submit([&](sycl::handler &cgh) {
+      // Get accessors to the buffer data
       sycl::accessor in(input_buf, cgh, sycl::read_only);
       sycl::accessor out(output_buf, cgh, sycl::write_only);
 
+      // Execute kernel
       cgh.parallel_for(sycl::range<2>(new_h, new_w), [=](sycl::id<2> idx) {
         int out_y = idx[0];
         int out_x = idx[1];
@@ -88,6 +89,7 @@ void RotateOp::apply_kernel(Image &img) {
         int in_x = 0;
         int in_y = 0;
 
+        // Coordinate mapping math
         if (local_angle == 90) {
           in_x = out_y;
           in_y = img_w - 1 - out_x;
@@ -99,16 +101,21 @@ void RotateOp::apply_kernel(Image &img) {
           in_y = out_x;
         }
 
+        // Map 2D coordinates back to 1D array positions
         size_t orig_idx = (size_t)(in_y * img_w + in_x) * channels;
         size_t new_idx = (size_t)(out_y * new_w + out_x) * channels;
 
+        // Copy the RGBA channels
         for (int c = 0; c < channels; ++c) {
           out[new_idx + c] = in[orig_idx + c];
         }
       });
     });
+    // Scope ends: output_buf destructor runs here,
+    // ensuring data is copied back to rotated_pixels before moving on.
   }
 
+  // 5. Update image state
   img.pixels = std::move(rotated_pixels);
   img.width = new_w;
   img.height = new_h;

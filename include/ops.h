@@ -1,8 +1,8 @@
 #pragma once
 
+#include <sycl/sycl.hpp>
+
 #include "image.h"
-#include "types.h"
-#include <string>
 
 class CropOp {
 public:
@@ -21,7 +21,7 @@ public:
   RotateOp(int a) : angle(a) {}
 
   void apply_native(Image &img);
-  void apply_kernel(Image &img);
+  void apply_kernel(Image &img, sycl::queue &q);
 };
 
 class ConvolutionOp {

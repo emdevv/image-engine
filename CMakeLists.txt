@@ -9,11 +9,11 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # SFML
 find_package(SFML 2.5 COMPONENTS graphics window system REQUIRED)
+find_package(IntelSYCL REQUIRED)
 
 # Collect source files
 file(GLOB APP_SOURCES "src/*.cpp" "src/ops/*.cpp")
 
-# 3. ImGui (doar fișierele .cpp)
 set(IMGUI_DIR ${CMAKE_SOURCE_DIR}/external/imgui)
 set(IMGUI_SOURCES
     ${IMGUI_DIR}/imgui.cpp
@@ -23,27 +23,21 @@ set(IMGUI_SOURCES
     ${IMGUI_DIR}/imgui_demo.cpp
 )
 
-# 4. Definim executabilul
 add_executable(image-engine ${APP_SOURCES} ${IMGUI_SOURCES})
 
-# 5. Configurare include-uri
+# Add SYCL support using Intel's modern CMake approach
+add_sycl_to_target(TARGET image-engine SOURCES ${APP_SOURCES})
+
 target_include_directories(image-engine PRIVATE
     ${CMAKE_SOURCE_DIR}/include
     ${CMAKE_SOURCE_DIR}/external/stb
     ${CMAKE_SOURCE_DIR}/external/CLI11
     ${IMGUI_DIR}
+    ${IntelSYCL_INCLUDE_DIRS}
 )
 
-# --- AICI ESTE MAGIA (Surgicală) ---
-
-# NU mai folosim target_compile_options global! 
-# Aplicăm SYCL doar pe fișierul care chiar are cod GPU
-set_source_files_properties(src/ops/rotate.cpp PROPERTIES COMPILE_FLAGS "-fsycl")
-
-# Dar menținem link-ul de SYCL pentru executabil (ca să găsească bibliotecile)
 target_link_options(image-engine PRIVATE -fsycl)
 
-# 6. Linkare biblioteci
 target_link_libraries(image-engine PRIVATE
     sfml-graphics
     sfml-window
