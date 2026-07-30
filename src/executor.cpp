@@ -1,5 +1,7 @@
 #include "executor.h"
+#include "sycl/info/info_desc.hpp"
 #include "types.h"
+#include <print>
 
 Executor::Executor(Device t) : type(t) {
   if (type == Device::NATIVE_CPU)
@@ -12,7 +14,7 @@ Executor::Executor(Device t) : type(t) {
       q = sycl::queue(sycl::gpu_selector_v);
     }
 
-    std::cout << "[SYCL Info] Using: " << q.get_device().get_info<sycl::info::device::name>() << std::endl;
+    std::print("[SYCL Info] Using: {} \n", q.get_device().get_info<sycl::info::device::name>());
   } catch (const sycl::exception &e) {
     std::cerr << "[SYCL Error] Requested device unavailable: " << e.what() << std::endl;
     // Fallback or exit depending on your requirements

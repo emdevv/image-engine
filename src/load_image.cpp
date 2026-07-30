@@ -1,7 +1,7 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "load_image.h"
 #include "image.h"
-#include <iostream>
+#include <print>
 #include <stb_image.h>
 #include <stdexcept>
 
@@ -9,12 +9,11 @@ Image load_image(const std::string &filepath) {
   Image img;
 
   // force RGBA
-  unsigned char *data =
-      stbi_load(filepath.c_str(), &img.width, &img.height, &img.channels, 4);
+  unsigned char *data = stbi_load(filepath.c_str(), &img.width, &img.height, &img.channels, 4);
 
   // stbi function for throwing the full error
   if (!data) {
-    std::cout << "Full error: " << stbi_failure_reason();
+    std::print("Full error: {}\n", stbi_failure_reason());
     throw std::runtime_error("Failed to load image: " + filepath);
   }
 
