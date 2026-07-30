@@ -23,7 +23,6 @@ void setup_cli(CLI::App &app, AppContext &ctx) {
 
   ctx.rotate_cmd = app.add_subcommand("rotate", "Rotate the image");
   ctx.rotate_cmd->add_option("angle", ctx.rotate_angle, "Angle (90, 180, 270)")->required();
-  // ctx.rotate_cmd->add_option("device", ctx.rotate_device, "CPU/GPU")->required();
 
   auto device_group = app.add_option_group("Device", "Select compute device");
   device_group->add_flag_callback("--cpu", [&ctx]() { ctx.type = Device::CPU; }, "Use CPU");
@@ -40,13 +39,13 @@ void run_operations(const AppContext &ctx) {
   display_image(img);
 
   if (ctx.crop_cmd->parsed()) {
-    // img.crop(ctx.cx, ctx.cy, ctx.cw, ctx.ch);
+    img.crop(ctx.cx, ctx.cy, ctx.cw, ctx.ch);
   } else if (ctx.blur_cmd->parsed()) {
-    // img.blur(ctx.blur_percentage);
+    img.blur(ctx.blur_percentage);
   } else if (ctx.rotate_cmd->parsed()) {
-    myExe.execute(img, RotateOp(90));
+    myExe.execute(img, RotateOp(ctx.rotate_angle));
   } else if (ctx.conv_cmd->parsed()) {
-    // img.convolution({{-1.f, -1.f, -1.f}, {-1.f, 8.f, -1.f}, {-1.f, -1.f, -1.f}});
+    img.convolution({{-1.f, -1.f, -1.f}, {-1.f, 8.f, -1.f}, {-1.f, -1.f, -1.f}});
   }
 
   std::cout << "Processed Image size: " << img.width << "x" << img.height << "\n";
