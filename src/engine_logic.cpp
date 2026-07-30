@@ -6,6 +6,7 @@
 #include "executor.h"
 #include "types.h"
 #include <iostream>
+#include <print>
 
 void setup_cli(CLI::App &app, AppContext &ctx) {
   app.require_subcommand(1);
@@ -35,7 +36,7 @@ void setup_cli(CLI::App &app, AppContext &ctx) {
 void run_operations(const AppContext &ctx) {
   Executor myExe(ctx.type);
   Image img = load_image(ctx.filepath);
-  std::cout << "Original Image loaded: " << img.width << "x" << img.height << "\n";
+  std::print("Original Image loaded: {}x{} \n", img.width, img.height);
   display_image(img);
 
   if (ctx.crop_cmd->parsed()) {
@@ -48,6 +49,6 @@ void run_operations(const AppContext &ctx) {
     img.convolution({{-1.f, -1.f, -1.f}, {-1.f, 8.f, -1.f}, {-1.f, -1.f, -1.f}});
   }
 
-  std::cout << "Processed Image size: " << img.width << "x" << img.height << "\n";
+  std::print("Processed Image size: {}x{} \n", img.width, img.height);
   display_image(img);
 }
