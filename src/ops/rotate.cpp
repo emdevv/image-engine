@@ -55,22 +55,23 @@ void RotateOp::apply_native(Image &img) {
 }
 
 void RotateOp::apply_kernel(Image &img, sycl::queue &q) {
-  // 1. Normalize angle
+
+  // Normalize angle
   int local_angle = ((angle % 360) + 360) % 360;
   if (local_angle == 0)
     return;
 
-  // 2. Setup Dimensions
+  // Setup Dimensions
   const int channels = 4;
   const int img_w = img.width;
   const int img_h = img.height;
   int new_w = (local_angle == 180) ? img_w : img_h;
   int new_h = (local_angle == 180) ? img_h : img_w;
 
-  // 3. Prepare result buffer
+  // Prepare result buffer
   std::vector<unsigned char> rotated_pixels(new_w * new_h * channels);
 
-  // 4. Submit to SYCL queue
+  // Submit to SYCL queue
   {
     // Buffers manage the data transfer between host (CPU) and device (GPU/CPU)
     sycl::buffer<unsigned char, 1> input_buf(img.pixels.data(), sycl::range<1>(img.pixels.size()));
@@ -111,11 +112,8 @@ void RotateOp::apply_kernel(Image &img, sycl::queue &q) {
         }
       });
     });
-    // Scope ends: output_buf destructor runs here,
-    // ensuring data is copied back to rotated_pixels before moving on.
   }
 
-  // 5. Update image state
   img.pixels = std::move(rotated_pixels);
   img.width = new_w;
   img.height = new_h;

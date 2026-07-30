@@ -67,8 +67,8 @@ Using CMake:
 mkdir build
 cd build
 
-cmake ..
-cmake --build .
+cmake -DCMAKE_CXX_COMPILER=icpx ..
+cmake --build . -j
 ```
 
 Or compile manually with your preferred compiler and link against SFML.
@@ -80,15 +80,8 @@ Or compile manually with your preferred compiler and link against SFML.
 General syntax:
 
 ```bash
-image-engine <image> <command> [arguments]
+image-engine <image> <--cpu/--gpu> <command> [arguments]
 ```
-
-## Technologies Used
-
-- C++17
-- SFML
-- CLI11
-- stb_image
 
 ---
 

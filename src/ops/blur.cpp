@@ -71,14 +71,10 @@ void BlurOp::apply(Image &img, int blur_percentage) {
       }
 
       size_t target_idx = (y * img.width + x) * channels;
-      blurred_pixels[target_idx + 0] =
-          static_cast<unsigned char>(sum_r / count);
-      blurred_pixels[target_idx + 1] =
-          static_cast<unsigned char>(sum_g / count);
-      blurred_pixels[target_idx + 2] =
-          static_cast<unsigned char>(sum_b / count);
-      blurred_pixels[target_idx + 3] =
-          static_cast<unsigned char>(sum_a / count);
+      blurred_pixels[target_idx + 0] = static_cast<unsigned char>(sum_r / count);
+      blurred_pixels[target_idx + 1] = static_cast<unsigned char>(sum_g / count);
+      blurred_pixels[target_idx + 2] = static_cast<unsigned char>(sum_b / count);
+      blurred_pixels[target_idx + 3] = static_cast<unsigned char>(sum_a / count);
     }
   }
 
