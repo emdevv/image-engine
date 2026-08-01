@@ -1,9 +1,11 @@
 #include "image.h"
 #include "ops.h"
 #include "sycl/queue.hpp"
+
 #include <algorithm>
 #include <stdexcept>
 #include <vector>
+#include <chrono>
 
 void CropOp::apply_native(Image &img) {
   const int channels = 4;
@@ -13,6 +15,8 @@ void CropOp::apply_native(Image &img) {
 
   std::vector<unsigned char> crepped_pixels;
   crepped_pixels.resize(crop_w * crop_h * channels);
+
+  auto start = std::chrono::high_resolution_clock::now();
 
   for (int row = 0; row < crop_h; ++row) {
     // Find where this specific row starts in the ORIGINAL image
@@ -29,6 +33,12 @@ void CropOp::apply_native(Image &img) {
     std::copy(img.pixels.begin() + orig_row_start_index, img.pixels.begin() + orig_row_start_index + bytes_to_copy,
               crepped_pixels.begin() + crop_row_start_index);
   }
+
+  auto end = std::chrono::high_resolution_clock::now();
+
+  std::chrono::duration<double, std::milli> duration = end - start;
+
+  std::cout << "[Profiling] CropOp execution time: " << duration.count() << " ms" << std::endl;
 
   img.pixels = std::move(crepped_pixels);
   img.width = crop_w;
@@ -54,7 +64,7 @@ void CropOp::apply_kernel(Image &img, sycl::queue &q) {
     sycl::buffer<unsigned char, 1> in_buf(img.pixels.data(), sycl::range<1>(img.pixels.size()));
     sycl::buffer<unsigned char, 1> out_buf(cropped_pixels.data(), sycl::range<1>(cropped_pixels.size()));
 
-    q.submit([&](sycl::handler &cgh) {
+    sycl::event e = q.submit([&](sycl::handler &cgh) {
       auto in = in_buf.get_access<sycl::access::mode::read>(cgh);
       auto out = out_buf.get_access<sycl::access::mode::write>(cgh);
 
@@ -73,6 +83,14 @@ void CropOp::apply_kernel(Image &img, sycl::queue &q) {
         }
       });
     });
+    e.wait();
+
+    auto start = e.get_profiling_info<sycl::info::event_profiling::command_start>();
+    auto end = e.get_profiling_info<sycl::info::event_profiling::command_end>();
+
+    double duration_ms = (end - start) / 1e6;
+
+    std::cout << "[Profiling] CropOp execution time: " << duration_ms << " ms" << std::endl;
   }
 
   img.pixels = std::move(cropped_pixels);

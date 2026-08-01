@@ -1,5 +1,6 @@
 #include "image.h"
 #include "ops.h"
+#include "sycl/event.hpp"
 #include "sycl/queue.hpp"
 #include <algorithm>
 #include <vector>
@@ -14,6 +15,8 @@ void ConvolutionOp::apply_native(Image &img) {
   int halfW = kw / 2;
 
   std::vector<unsigned char> out(img.pixels.size());
+
+  auto start = std::chrono::high_resolution_clock::now();
 
   for (int y = 0; y < img.height; y++) {
     for (int x = 0; x < img.width; x++) {
@@ -52,6 +55,12 @@ void ConvolutionOp::apply_native(Image &img) {
       out[out_idx + 3] = img.pixels[out_idx + 3];
     }
   }
+  auto end = std::chrono::high_resolution_clock::now();
+
+  std::chrono::duration<double, std::milli> duration = end - start;
+
+  std::cout << "[Profiling] ConvolutionOp execution time: " << duration.count() << " ms" << std::endl;
+
   img.pixels = std::move(out);
 }
 
@@ -68,7 +77,7 @@ void ConvolutionOp::apply_kernel(Image &img, sycl::queue &q) {
 
     sycl::buffer<float, 1> k_buf(flat_kernel.data(), sycl::range<1>(flat_kernel.size()));
 
-    q.submit([&](sycl::handler &cgh) {
+    sycl::event e = q.submit([&](sycl::handler &cgh) {
       auto in = in_buf.get_access<sycl::access::mode::read>(cgh);
       auto out = out_buf.get_access<sycl::access::mode::write>(cgh);
       auto k_acc = k_buf.get_access<sycl::access::mode::read>(cgh);
@@ -107,6 +116,14 @@ void ConvolutionOp::apply_kernel(Image &img, sycl::queue &q) {
         out[out_idx + 3] = in[out_idx + 3];
       });
     });
+    e.wait();
+
+    auto start = e.get_profiling_info<sycl::info::event_profiling::command_start>();
+    auto end = e.get_profiling_info<sycl::info::event_profiling::command_end>();
+
+    double duration_ms = (end - start) / 1e6;
+
+    std::cout << "[Profiling] ConvolutionOp execution time: " << duration_ms << " ms" << std::endl;
   }
 
   img.pixels = std::move(out);

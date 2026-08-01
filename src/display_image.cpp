@@ -1,10 +1,15 @@
 #include "display_image.h"
 #include <SFML/Graphics.hpp>
+#include <SFML/Window/WindowStyle.hpp>
 
 void display_image(const Image &img) {
+  sf::ContextSettings settings;
+  settings.antialiasingLevel = 0;
 
   // Create SFML window
-  sf::RenderWindow window(sf::VideoMode(800, 600), "Image Viewer");
+  sf::RenderWindow window(sf::VideoMode(800, 600), "Image Viewer", sf::Style::Default, settings);
+
+  window.setVerticalSyncEnabled(false);
 
   // Create SFML texture from your LoadedImage
   sf::Texture texture;

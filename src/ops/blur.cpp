@@ -1,5 +1,6 @@
 #include "image.h"
 #include "ops.h"
+#include "sycl/event.hpp"
 #include "sycl/queue.hpp"
 #include <algorithm>
 #include <vector>
@@ -24,6 +25,8 @@ void BlurOp::apply_native(Image &img) {
   // Allocate intermediate and final buffers
   std::vector<unsigned char> temp_pixels(img.pixels.size());
   std::vector<unsigned char> blurred_pixels(img.pixels.size());
+
+  auto start = std::chrono::high_resolution_clock::now();
 
   // PASS 1: Horizontal Blur (img.pixels -> temp_pixels)
   for (int y = 0; y < img.height; ++y) {
@@ -79,6 +82,12 @@ void BlurOp::apply_native(Image &img) {
     }
   }
 
+  auto end = std::chrono::high_resolution_clock::now();
+
+  std::chrono::duration<double, std::milli> duration = end - start;
+
+  std::cout << "[Profiling] BlurOp execution time: " << duration.count() << " ms" << std::endl;
+
   img.pixels = std::move(blurred_pixels);
 }
 
@@ -94,8 +103,6 @@ void BlurOp::apply_kernel(Image &img, sycl::queue &q) {
   if (radius == 0)
     return;
 
-  // --- PASUL 1: Extrage variabilele în tipuri simple (POD) ---
-  // Aceastea sunt sigure pentru a fi capturate prin valoare [=]
   const int img_w = img.width;
   const int img_h = img.height;
   const int r = radius;
@@ -107,11 +114,10 @@ void BlurOp::apply_kernel(Image &img, sycl::queue &q) {
     sycl::buffer<unsigned char, 1> tmp_buf(temp_pixels.data(), sycl::range<1>(temp_pixels.size()));
 
     // --- PASS 1: Horizontal Blur ---
-    q.submit([&](sycl::handler &cgh) {
+    sycl::event e1 = q.submit([&](sycl::handler &cgh) {
       auto in = in_buf.get_access<sycl::access::mode::read>(cgh);
       auto tmp = tmp_buf.get_access<sycl::access::mode::write>(cgh);
 
-      // Folosim DOAR variabilele locale (img_w, img_h, r)
       cgh.parallel_for(sycl::range<2>(img_h, img_w), [=](sycl::id<2> idx) {
         int y = idx[0];
         int x = idx[1];
@@ -120,7 +126,6 @@ void BlurOp::apply_kernel(Image &img, sycl::queue &q) {
 
         for (int kx = -r; kx <= r; ++kx) {
           int nx = x + kx;
-          // Folosim variabila locală img_w
           if (nx >= 0 && nx < img_w) {
             size_t src_idx = (y * img_w + nx) * channels;
             for (int c = 0; c < channels; ++c)
@@ -136,7 +141,7 @@ void BlurOp::apply_kernel(Image &img, sycl::queue &q) {
     });
 
     // --- PASS 2: Vertical Blur ---
-    q.submit([&](sycl::handler &cgh) {
+    sycl::event e2 = q.submit([&](sycl::handler &cgh) {
       auto tmp = tmp_buf.get_access<sycl::access::mode::read>(cgh);
       auto out = in_buf.get_access<sycl::access::mode::write>(cgh);
 
@@ -148,7 +153,6 @@ void BlurOp::apply_kernel(Image &img, sycl::queue &q) {
 
         for (int ky = -r; ky <= r; ++ky) {
           int ny = y + ky;
-          // Folosim variabila locală img_h
           if (ny >= 0 && ny < img_h) {
             size_t src_idx = (ny * img_w + x) * channels;
             for (int c = 0; c < channels; ++c)
@@ -162,5 +166,20 @@ void BlurOp::apply_kernel(Image &img, sycl::queue &q) {
           out[target_idx + c] = static_cast<unsigned char>(sum[c] / count);
       });
     });
+
+    // e2.wait() is enough
+    e2.wait();
+
+    auto start1 = e1.get_profiling_info<sycl::info::event_profiling::command_start>();
+    auto end1 = e1.get_profiling_info<sycl::info::event_profiling::command_end>();
+
+    auto start2 = e2.get_profiling_info<sycl::info::event_profiling::command_start>();
+    auto end2 = e2.get_profiling_info<sycl::info::event_profiling::command_end>();
+
+    double duration1_ms = (end1 - start1) / 1e6;
+    double duration2_ms = (end2 - start2) / 1e6;
+    double total_ms = duration1_ms + duration2_ms;
+
+    std::cout << "[Profiling] BlurOp execution time: " << total_ms << " ms" << std::endl;
   }
 }

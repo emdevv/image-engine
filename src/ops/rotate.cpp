@@ -1,6 +1,9 @@
 #include "ops.h"
 #include "image.h"
+#include "sycl/event.hpp"
+
 #include <stdexcept>
+#include <chrono>
 
 void RotateOp::apply_native(Image &img) {
   // Normalize angle to handle negative numbers or numbers > 360 (e.g., -90
@@ -19,6 +22,8 @@ void RotateOp::apply_native(Image &img) {
   int new_h = (angle == 180) ? img.height : img.width;
 
   std::vector<unsigned char> rotated_pixels(new_w * new_h * channels);
+
+  auto start = std::chrono::high_resolution_clock::now();
 
   for (int y = 0; y < img.height; ++y) {
     for (int x = 0; x < img.width; ++x) {
@@ -47,6 +52,12 @@ void RotateOp::apply_native(Image &img) {
       }
     }
   }
+
+  auto end = std::chrono::high_resolution_clock::now();
+
+  std::chrono::duration<double, std::milli> duration = end - start;
+
+  std::cout << "[Profiling] RotateOp execution time: " << duration.count() << " ms" << std::endl;
 
   // Update the image object
   img.pixels = std::move(rotated_pixels);
@@ -77,7 +88,7 @@ void RotateOp::apply_kernel(Image &img, sycl::queue &q) {
     sycl::buffer<unsigned char, 1> input_buf(img.pixels.data(), sycl::range<1>(img.pixels.size()));
     sycl::buffer<unsigned char, 1> output_buf(rotated_pixels.data(), sycl::range<1>(rotated_pixels.size()));
 
-    q.submit([&](sycl::handler &cgh) {
+    sycl::event e = q.submit([&](sycl::handler &cgh) {
       // Get accessors to the buffer data
       sycl::accessor in(input_buf, cgh, sycl::read_only);
       sycl::accessor out(output_buf, cgh, sycl::write_only);
@@ -112,6 +123,14 @@ void RotateOp::apply_kernel(Image &img, sycl::queue &q) {
         }
       });
     });
+    e.wait();
+
+    auto start = e.get_profiling_info<sycl::info::event_profiling::command_start>();
+    auto end = e.get_profiling_info<sycl::info::event_profiling::command_end>();
+
+    double duration_ms = (end - start) / 1e6;
+
+    std::cout << "[Profiling] RotateOp execution time: " << duration_ms << " ms" << std::endl;
   }
 
   img.pixels = std::move(rotated_pixels);

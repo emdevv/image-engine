@@ -1,5 +1,6 @@
 #include "executor.h"
 #include "sycl/info/info_desc.hpp"
+#include "sycl/properties/queue_properties.hpp"
 #include "types.h"
 #include <print>
 
@@ -9,11 +10,13 @@ Executor::Executor(Device t) : type(t) {
     return;
   }
 
+  auto prop = sycl::property::queue::enable_profiling();
+
   try {
     if (type == Device::CPU) {
-      q = sycl::queue(sycl::cpu_selector_v);
+      q = sycl::queue(sycl::cpu_selector_v, prop);
     } else if (type == Device::GPU) {
-      q = sycl::queue(sycl::gpu_selector_v);
+      q = sycl::queue(sycl::gpu_selector_v, prop);
     }
 
     std::print("[SYCL Info] Using: {} \n", q.get_device().get_info<sycl::info::device::name>());
