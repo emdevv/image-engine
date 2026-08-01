@@ -4,8 +4,10 @@
 #include <print>
 
 Executor::Executor(Device t) : type(t) {
-  if (type == Device::NATIVE_CPU)
+  if (type == Device::NATIVE_CPU) {
+    std::print("[NATIVE Info] Using: CPU \n");
     return;
+  }
 
   try {
     if (type == Device::CPU) {
