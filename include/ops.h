@@ -1,17 +1,32 @@
 #pragma once
 
 #include <sycl/sycl.hpp>
-
 #include "image.h"
+#include "sycl/queue.hpp"
 
 class CropOp {
 public:
-  static void apply(Image &img, int crop_x, int crop_y, int crop_w, int crop_h);
+  int crop_x;
+  int crop_y;
+  int crop_w;
+  int crop_h;
+
+  CropOp(int x, int y, int w, int h) : crop_x(x), crop_y(y), crop_w(w), crop_h(h) {}
+
+  void apply_native(Image &img);
+  void apply_kernel(Image &img, sycl::queue &q);
+
+  // static void apply(Image &img, int crop_x, int crop_y, int crop_w, int crop_h);
 };
 
 class BlurOp {
 public:
-  static void apply(Image &img, int blur);
+  int percentage;
+
+  BlurOp(int p) : percentage(p) {}
+
+  void apply_native(Image &img);
+  void apply_kernel(Image &img, sycl::queue &q);
 };
 
 class RotateOp {
@@ -26,5 +41,27 @@ public:
 
 class ConvolutionOp {
 public:
-  static void apply(Image &img, std::vector<std::vector<float>> kernel);
+  std::vector<std::vector<float>> kernel;
+  std::vector<float> flat_kernel;
+  int kw;
+  int kh;
+  int halfH;
+  int halfW;
+
+  ConvolutionOp(std::vector<std::vector<float>> k) : kernel(k) {
+    kh = kernel.size();
+    kw = kernel[0].size();
+    halfH = kh / 2;
+    halfW = kw / 2;
+
+    flat_kernel.resize(kh * kw);
+    for (int y = 0; y < kh; ++y) {
+      for (int x = 0; x < kw; ++x) {
+        flat_kernel[y * kw + x] = kernel[y][x];
+      }
+    }
+  }
+
+  void apply_native(Image &img);
+  void apply_kernel(Image &img, sycl::queue &q);
 };

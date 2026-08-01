@@ -5,7 +5,6 @@
 #include "ops.h"
 #include "executor.h"
 #include "types.h"
-#include <iostream>
 #include <print>
 
 void setup_cli(CLI::App &app, AppContext &ctx) {
@@ -34,19 +33,21 @@ void setup_cli(CLI::App &app, AppContext &ctx) {
 }
 
 void run_operations(const AppContext &ctx) {
+  std::vector<std::vector<float>> kernel = {{-1.f, -1.f, -1.f}, {-1.f, 8.f, -1.f}, {-1.f, -1.f, -1.f}};
+
   Executor myExe(ctx.type);
   Image img = load_image(ctx.filepath);
   std::print("Original Image loaded: {}x{} \n", img.width, img.height);
   display_image(img);
 
   if (ctx.crop_cmd->parsed()) {
-    img.crop(ctx.cx, ctx.cy, ctx.cw, ctx.ch);
+    myExe.execute(img, CropOp(ctx.cx, ctx.cy, ctx.cw, ctx.ch));
   } else if (ctx.blur_cmd->parsed()) {
-    img.blur(ctx.blur_percentage);
+    myExe.execute(img, BlurOp(ctx.blur_percentage));
   } else if (ctx.rotate_cmd->parsed()) {
     myExe.execute(img, RotateOp(ctx.rotate_angle));
   } else if (ctx.conv_cmd->parsed()) {
-    img.convolution({{-1.f, -1.f, -1.f}, {-1.f, 8.f, -1.f}, {-1.f, -1.f, -1.f}});
+    myExe.execute(img, ConvolutionOp(kernel));
   }
 
   std::print("Processed Image size: {}x{} \n", img.width, img.height);
