@@ -37,7 +37,7 @@ void run_operations(const AppContext &ctx) {
 
   Executor myExe(ctx.type);
   Image img = load_image(ctx.filepath);
-  std::print("Original Image loaded: {}x{} \n", img.width, img.height);
+  // std::print("Original Image loaded: {}x{} \n", img.width, img.height);
   display_image(img);
 
   if (ctx.crop_cmd->parsed()) {
@@ -50,6 +50,6 @@ void run_operations(const AppContext &ctx) {
     myExe.execute(img, ConvolutionOp(kernel));
   }
 
-  std::print("Processed Image size: {}x{} \n", img.width, img.height);
+  // std::print("Processed Image size: {}x{} \n", img.width, img.height);
   display_image(img);
 }
