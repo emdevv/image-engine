@@ -1,9 +1,11 @@
 #include "image.h"
 #include "ops.h"
 #include "sycl/event.hpp"
-#include "sycl/queue.hpp"
+
 #include <algorithm>
+#include <print>
 #include <vector>
+#include <print>
 
 void BlurOp::apply_native(Image &img) {
   const int channels = 4;
@@ -86,7 +88,7 @@ void BlurOp::apply_native(Image &img) {
 
   std::chrono::duration<double, std::milli> duration = end - start;
 
-  std::cout << "[Profiling] BlurOp execution time: " << duration.count() << " ms" << std::endl;
+  std::cout << "[Profiling][Native CPU] BlurOp execution time: " << duration.count() << " ms" << std::endl;
 
   img.pixels = std::move(blurred_pixels);
 }
@@ -180,6 +182,6 @@ void BlurOp::apply_kernel(Image &img, sycl::queue &q) {
     double duration2_ms = (end2 - start2) / 1e6;
     double total_ms = duration1_ms + duration2_ms;
 
-    std::cout << "[Profiling] BlurOp execution time: " << total_ms << " ms" << std::endl;
+    std::print("[Profiling][{}] BlurOp execution time: {} ms \n", q.get_device().get_info<sycl::info::device::name>(), total_ms);
   }
 }

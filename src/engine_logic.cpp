@@ -28,6 +28,7 @@ void setup_cli(CLI::App &app, AppContext &ctx) {
   device_group->add_flag_callback("--cpu", [&ctx]() { ctx.type = Device::CPU; }, "Use CPU");
   device_group->add_flag_callback("--gpu", [&ctx]() { ctx.type = Device::GPU; }, "Use GPU");
   device_group->add_flag_callback("--native-cpu", [&ctx]() { ctx.type = Device::NATIVE_CPU; }, "Use native CPU");
+  device_group->add_flag_callback("--compare", [&ctx]() { ctx.type = Device::COMPARE; }, "Use all devices and create profiling");
 
   ctx.conv_cmd = app.add_subcommand("convolution", "Convolution to image");
 }

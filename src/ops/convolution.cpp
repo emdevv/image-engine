@@ -1,9 +1,12 @@
 #include "image.h"
 #include "ops.h"
+
 #include "sycl/event.hpp"
 #include "sycl/queue.hpp"
+
 #include <algorithm>
 #include <vector>
+#include <print>
 
 void ConvolutionOp::apply_native(Image &img) {
   const int channels = 4;
@@ -59,7 +62,7 @@ void ConvolutionOp::apply_native(Image &img) {
 
   std::chrono::duration<double, std::milli> duration = end - start;
 
-  std::cout << "[Profiling] ConvolutionOp execution time: " << duration.count() << " ms" << std::endl;
+  std::cout << "[Profiling][Native CPU] ConvolutionOp execution time: " << duration.count() << " ms" << std::endl;
 
   img.pixels = std::move(out);
 }
@@ -123,7 +126,7 @@ void ConvolutionOp::apply_kernel(Image &img, sycl::queue &q) {
 
     double duration_ms = (end - start) / 1e6;
 
-    std::cout << "[Profiling] ConvolutionOp execution time: " << duration_ms << " ms" << std::endl;
+    std::print("[Profiling][{}] ConvolutionOp execution time: {} ms \n", q.get_device().get_info<sycl::info::device::name>(), duration_ms);
   }
 
   img.pixels = std::move(out);

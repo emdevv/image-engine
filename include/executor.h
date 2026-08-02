@@ -12,6 +12,12 @@ public:
   void execute(Image &img, OpType op) {
     if (type == Device::NATIVE_CPU) {
       op.apply_native(img);
+
+    } else if (type == Device::COMPARE) {
+      op.apply_native(img);
+      op.apply_kernel(img, q);
+      op.apply_kernel(img, q_s);
+
     } else {
       op.apply_kernel(img, q);
     }
@@ -20,4 +26,5 @@ public:
 private:
   Device type;
   sycl::queue q;
+  sycl::queue q_s;
 };

@@ -4,6 +4,7 @@
 
 #include <stdexcept>
 #include <chrono>
+#include <print>
 
 void RotateOp::apply_native(Image &img) {
   // Normalize angle to handle negative numbers or numbers > 360 (e.g., -90
@@ -57,7 +58,7 @@ void RotateOp::apply_native(Image &img) {
 
   std::chrono::duration<double, std::milli> duration = end - start;
 
-  std::cout << "[Profiling] RotateOp execution time: " << duration.count() << " ms" << std::endl;
+  std::cout << "[Profiling][Native CPU] RotateOp execution time: " << duration.count() << " ms" << std::endl;
 
   // Update the image object
   img.pixels = std::move(rotated_pixels);
@@ -130,7 +131,7 @@ void RotateOp::apply_kernel(Image &img, sycl::queue &q) {
 
     double duration_ms = (end - start) / 1e6;
 
-    std::cout << "[Profiling] RotateOp execution time: " << duration_ms << " ms" << std::endl;
+    std::print("[Profiling][{}] RotateOp execution time: {} ms \n", q.get_device().get_info<sycl::info::device::name>(), duration_ms);
   }
 
   img.pixels = std::move(rotated_pixels);
