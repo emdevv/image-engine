@@ -5,7 +5,7 @@
 #include <algorithm>
 #include <stdexcept>
 #include <vector>
-#include <chrono>
+#include <print>
 
 void CropOp::apply_native(Image &img) {
   const int channels = 4;
@@ -38,7 +38,7 @@ void CropOp::apply_native(Image &img) {
 
   std::chrono::duration<double, std::milli> duration = end - start;
 
-  std::cout << "[Profiling] CropOp execution time: " << duration.count() << " ms" << std::endl;
+  std::cout << "[Profiling][Native CPU] CropOp execution time: " << duration.count() << " ms" << std::endl;
 
   img.pixels = std::move(crepped_pixels);
   img.width = crop_w;
@@ -90,7 +90,7 @@ void CropOp::apply_kernel(Image &img, sycl::queue &q) {
 
     double duration_ms = (end - start) / 1e6;
 
-    std::cout << "[Profiling] CropOp execution time: " << duration_ms << " ms" << std::endl;
+    std::print("[Profiling][{}] CropOp execution time: {} ms \n", q.get_device().get_info<sycl::info::device::name>(), duration_ms);
   }
 
   img.pixels = std::move(cropped_pixels);
