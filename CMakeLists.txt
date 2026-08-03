@@ -1,43 +1,51 @@
 cmake_minimum_required(VERSION 3.20)
-
 project(image_engine LANGUAGES CXX)
-
-find_package(SFML 2.5 COMPONENTS graphics window system REQUIRED)
-find_package(IntelSYCL REQUIRED)
 
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-file(GLOB_RECURSE SRC_FILES src/*.cpp)
+find_package(SFML 2.5 COMPONENTS graphics window system REQUIRED)
+find_package(IntelSYCL REQUIRED)
 
-set(IMGUI_DIR ${CMAKE_SOURCE_DIR}/external/imgui)
-set(IMGUI_SOURCES
-    ${IMGUI_DIR}/imgui.cpp
-    ${IMGUI_DIR}/imgui_draw.cpp
-    ${IMGUI_DIR}/imgui_tables.cpp
-    ${IMGUI_DIR}/imgui_widgets.cpp
-    ${IMGUI_DIR}/imgui_demo.cpp
+add_library(image_engine_core STATIC 
+    src/ops/blur.cpp
+    src/ops/convolution.cpp
+    src/ops/crop.cpp
+    src/ops/rotate.cpp
+    src/executor.cpp
+    src/image.cpp
+    src/load_image.cpp
 )
 
-# Create executable
-add_executable(image-engine ${SRC_FILES} ${IMGUI_SOURCES})
+add_library(image_engine_sfml STATIC
+    src/display_image.cpp
+)
 
-# 2. Add SYCL support
-# This handles all necessary compile/link flags automatically
-add_sycl_to_target(TARGET image-engine SOURCES ${SRC_FILES})
-
-# 3. Include Directories
-target_include_directories(image-engine PRIVATE
+target_include_directories(image_engine_core PUBLIC 
     ${CMAKE_SOURCE_DIR}/include
     ${CMAKE_SOURCE_DIR}/external/stb
     ${CMAKE_SOURCE_DIR}/external/CLI11
-    ${IMGUI_DIR}
 )
 
-# 4. Link Libraries
-target_link_libraries(image-engine PRIVATE
-    sfml-graphics
-    sfml-window
-    sfml-system
+add_sycl_to_target(TARGET image_engine_core)
+
+target_link_libraries(image_engine_sfml PRIVATE
+    sfml-graphics sfml-window sfml-system
 )
+
+target_include_directories(image_engine_sfml PUBLIC 
+    ${CMAKE_SOURCE_DIR}/include
+)
+
+add_executable(image-engine
+    src/main.cpp
+    src/engine_logic.cpp
+)
+
+target_link_libraries(image-engine PRIVATE 
+    image_engine_core 
+    image_engine_sfml
+)
+
+add_subdirectory(tests)
