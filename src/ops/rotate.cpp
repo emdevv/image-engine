@@ -102,15 +102,15 @@ void RotateOp::apply_kernel(Image &img, sycl::queue &q) {
         int in_x = 0;
         int in_y = 0;
 
-        // Coordinate mapping math
+        // Corrected Coordinate mapping math for 90 degrees
         if (local_angle == 90) {
           in_x = out_y;
-          in_y = img_w - 1 - out_x;
+          in_y = (img_h - 1) - out_x;
         } else if (local_angle == 180) {
           in_x = img_w - 1 - out_x;
           in_y = img_h - 1 - out_y;
         } else if (local_angle == 270) {
-          in_x = img_h - 1 - out_y;
+          in_x = (img_w - 1) - out_y;
           in_y = out_x;
         }
 
