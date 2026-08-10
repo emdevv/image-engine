@@ -36,7 +36,7 @@ image-engine/
 
 Before building the project, make sure you have:
 
-- C++17 compatible compiler
+- C++23 compatible compiler
 - CMake (recommended)
 - SFML
 - CLI11 (included)
@@ -46,32 +46,14 @@ Before building the project, make sure you have:
 
 - Windows
 - Linux
-- macOS (with SFML installed)
 
 ---
 
 ## Installation
 
-### 1. Clone the repository
+# How to build & install
 
-```bash
-git clone https://github.com/emdevv/image-engine.git
-cd image-engine
-```
-
-### 2. Build the project
-
-Using CMake:
-
-```bash
-mkdir build
-cd build
-
-cmake -DCMAKE_CXX_COMPILER=icpx ..
-cmake --build . -j
-```
-
-Or compile manually with your preferred compiler and link against SFML.
+The process of building and installing can be quite long, please refer to the [How to build](BUILD.md) guide for this information.
 
 ---
 
@@ -80,7 +62,7 @@ Or compile manually with your preferred compiler and link against SFML.
 General syntax:
 
 ```bash
-image-engine <image> <--cpu/--gpu> <command> [arguments]
+image-engine <image> <--cpu/--gpu/--compare> <command> [arguments]
 ```
 
 ---
