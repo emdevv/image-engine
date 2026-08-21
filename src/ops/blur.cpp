@@ -95,12 +95,11 @@ void BlurOp::apply_native(Image &img) {
 
 void BlurOp::apply_kernel(Image &img, sycl::queue &q) {
   const int channels = 4;
-  int blur_percentage = 50;
 
   int max_radius = std::min(img.width, img.height) / 10;
   if (max_radius < 1)
     max_radius = 1;
-  int radius = (blur_percentage * max_radius) / 100;
+  int radius = (percentage * max_radius) / 100;
 
   if (radius == 0)
     return;

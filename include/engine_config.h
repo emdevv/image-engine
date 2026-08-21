@@ -5,7 +5,7 @@
 
 struct AppContext {
   std::string filepath;
-  Device type;
+  Device type = Device::NATIVE_CPU;
 
   int cx = 0, cy = 0, cw = 0, ch = 0;
   int blur_percentage = 0;
