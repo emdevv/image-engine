@@ -1,6 +1,10 @@
-#include "display_image.h"
-#include <SFML/Graphics.hpp>
-#include <SFML/Window/WindowStyle.hpp>
+#include "image.h"
+#define STB_IMAGE_IMPLEMENTATION
+
+#include "image_io.h"
+#include <print>
+#include <stb_image.h>
+#include <stdexcept>
 
 void display_image(const Image &img) {
   sf::ContextSettings settings;
@@ -35,4 +39,29 @@ void display_image(const Image &img) {
     window.draw(sprite);
     window.display();
   }
+}
+
+Image load_image(const std::string &filepath) {
+  Image img;
+
+  // force RGBA
+  unsigned char *data = stbi_load(filepath.c_str(), &img.width, &img.height, &img.channels, 4);
+
+  // stbi function for throwing the full error
+  if (!data) {
+    std::print("Full error: {}\n", stbi_failure_reason());
+    throw std::runtime_error("Failed to load image: " + filepath);
+  }
+
+  img.channels = 4;
+  img.pixels.assign(data, data + img.width * img.height * img.channels);
+
+  stbi_image_free(data);
+  return img;
+}
+
+Image save_image(const std::string &path, const Image &img) {
+  Image out;
+
+  return out;
 }

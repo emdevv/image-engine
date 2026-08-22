@@ -15,11 +15,7 @@ add_library(image_engine_core STATIC
     src/ops/rotate.cpp
     src/executor.cpp
     src/image.cpp
-    src/load_image.cpp
-)
-
-add_library(image_engine_sfml STATIC
-    src/display_image.cpp
+    src/image_io.cpp
 )
 
 target_include_directories(image_engine_core PUBLIC 
@@ -30,12 +26,8 @@ target_include_directories(image_engine_core PUBLIC
 
 add_sycl_to_target(TARGET image_engine_core)
 
-target_link_libraries(image_engine_sfml PRIVATE
+target_link_libraries(image_engine_core PRIVATE
     sfml-graphics sfml-window sfml-system
-)
-
-target_include_directories(image_engine_sfml PUBLIC 
-    ${CMAKE_SOURCE_DIR}/include
 )
 
 add_executable(image-engine
@@ -45,7 +37,6 @@ add_executable(image-engine
 
 target_link_libraries(image-engine PRIVATE 
     image_engine_core 
-    image_engine_sfml
 )
 
 add_subdirectory(tests)

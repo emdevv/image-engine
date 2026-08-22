@@ -1,11 +1,9 @@
 #include "engine_config.h"
 #include "image.h"
-#include "load_image.h"
-#include "display_image.h"
+#include "image_io.h"
 #include "ops.h"
 #include "executor.h"
 #include "types.h"
-#include <print>
 
 void setup_cli(CLI::App &app, AppContext &ctx) {
   app.require_subcommand(1);
