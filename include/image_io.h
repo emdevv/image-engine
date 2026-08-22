@@ -6,4 +6,4 @@
 
 void display_image(const Image &img);
 Image load_image(const std::string &filepath);
-Image save_image(const std::string &path, const Image &img);
+void save_image(const std::string &path, const Image &img);

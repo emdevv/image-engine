@@ -1,10 +1,12 @@
-#include "image.h"
 #define STB_IMAGE_IMPLEMENTATION
 
+#include "image.h"
 #include "image_io.h"
-#include <print>
 #include <stb_image.h>
+#include <print>
 #include <stdexcept>
+#include <string>
+#include <filesystem>
 
 void display_image(const Image &img) {
   sf::ContextSettings settings;
@@ -60,8 +62,20 @@ Image load_image(const std::string &filepath) {
   return img;
 }
 
-Image save_image(const std::string &path, const Image &img) {
-  Image out;
+void save_image(const std::string &filepath, const Image &img) {
+  if (img.pixels.empty() || img.width <= 0 || img.height <= 0) {
+    throw std::runtime_error("Empty image, abort!");
+  }
 
-  return out;
+  std::filesystem::path path(filepath);
+  if (path.has_parent_path()) {
+    std::filesystem::create_directories(path.parent_path());
+  }
+
+  sf::Image sfml_img;
+  sfml_img.create(img.width, img.height, img.pixels.data());
+
+  if (!sfml_img.saveToFile(filepath)) {
+    throw std::runtime_error("Saving error in: " + filepath);
+  }
 }

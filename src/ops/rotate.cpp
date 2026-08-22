@@ -6,7 +6,7 @@
 #include <chrono>
 #include <print>
 
-void RotateOp::apply_native(Image &img) {
+void RotateOp::apply_native(Image &img, Image &img_out) {
   // Normalize angle to handle negative numbers or numbers > 360 (e.g., -90
   // becomes 270)
   angle = ((angle % 360) + 360) % 360;
@@ -61,12 +61,12 @@ void RotateOp::apply_native(Image &img) {
   std::cout << "[Profiling][Native CPU] RotateOp execution time: " << duration.count() << " ms" << std::endl;
 
   // Update the image object
-  img.pixels = std::move(rotated_pixels);
-  img.width = new_w;
-  img.height = new_h;
+  img_out.pixels = std::move(rotated_pixels);
+  img_out.width = new_w;
+  img_out.height = new_h;
 }
 
-void RotateOp::apply_kernel(Image &img, sycl::queue &q) {
+void RotateOp::apply_kernel(Image &img, sycl::queue &q, Image &img_out) {
 
   // Normalize angle
   int local_angle = ((angle % 360) + 360) % 360;
@@ -134,7 +134,7 @@ void RotateOp::apply_kernel(Image &img, sycl::queue &q) {
     std::print("[Profiling][{}] RotateOp execution time: {} ms \n", q.get_device().get_info<sycl::info::device::name>(), duration_ms);
   }
 
-  img.pixels = std::move(rotated_pixels);
-  img.width = new_w;
-  img.height = new_h;
+  img_out.pixels = std::move(rotated_pixels);
+  img_out.width = new_w;
+  img_out.height = new_h;
 }

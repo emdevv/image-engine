@@ -9,18 +9,22 @@ public:
   ~Executor();
 
   template <typename OpType>
-  void execute(Image &img, OpType op) {
+  Image execute(Image &img, OpType op) {
+    Image out;
+
     if (type == Device::NATIVE_CPU) {
-      op.apply_native(img);
+      op.apply_native(img, out);
 
     } else if (type == Device::COMPARE) {
-      op.apply_native(img);
-      op.apply_kernel(img, q);
-      op.apply_kernel(img, q_s);
+      op.apply_native(img, out);
+      op.apply_kernel(img, q, out);
+      op.apply_kernel(img, q_s, out);
 
     } else {
-      op.apply_kernel(img, q);
+      op.apply_kernel(img, q, out);
     }
+
+    return out;
   }
 
 private:
