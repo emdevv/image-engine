@@ -17,11 +17,11 @@ public:
 
     } else if (type == Device::COMPARE) {
       op.apply_native(img, out);
-      op.apply_kernel(img, q, out);
-      op.apply_kernel(img, q_s, out);
+      op.apply_kernel(img, out, q);
+      op.apply_kernel(img, out, q_s);
 
     } else {
-      op.apply_kernel(img, q, out);
+      op.apply_kernel(img, out, q);
     }
 
     return out;

@@ -14,7 +14,7 @@ public:
   CropOp(int x, int y, int w, int h) : crop_x(x), crop_y(y), crop_w(w), crop_h(h) {}
 
   void apply_native(Image &img, Image &img_out);
-  void apply_kernel(Image &img, sycl::queue &q, Image &img_out);
+  void apply_kernel(Image &img, Image &img_out, sycl::queue &q);
 };
 
 class BlurOp {
@@ -24,7 +24,7 @@ public:
   BlurOp(int p) : percentage(p) {}
 
   void apply_native(Image &img, Image &img_out);
-  void apply_kernel(Image &img, sycl::queue &q, Image &img_out);
+  void apply_kernel(Image &img, Image &img_out, sycl::queue &q);
 };
 
 class RotateOp {
@@ -34,7 +34,7 @@ public:
   RotateOp(int a) : angle(a) {}
 
   void apply_native(Image &img_in, Image &img_out);
-  void apply_kernel(Image &img_in, sycl::queue &q, Image &img_out);
+  void apply_kernel(Image &img_in, Image &img_out, sycl::queue &q);
 };
 
 class ConvolutionOp {
@@ -61,5 +61,5 @@ public:
   }
 
   void apply_native(Image &img, Image &img_out);
-  void apply_kernel(Image &img, sycl::queue &q, Image &img_out);
+  void apply_kernel(Image &img, Image &img_out, sycl::queue &q);
 };

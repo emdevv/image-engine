@@ -45,7 +45,7 @@ void CropOp::apply_native(Image &img, Image &img_out) {
   img_out.height = crop_h;
 }
 
-void CropOp::apply_kernel(Image &img, sycl::queue &q, Image &img_out) {
+void CropOp::apply_kernel(Image &img, Image &img_out, sycl::queue &q) {
   const int channels = 4;
 
   if (crop_x + crop_w > img.width || crop_y + crop_h > img.height || crop_x < 0 || crop_y < 0) {

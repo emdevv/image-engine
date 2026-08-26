@@ -69,7 +69,7 @@ void ConvolutionOp::apply_native(Image &img, Image &img_out) {
   img_out.height = img.height;
 }
 
-void ConvolutionOp::apply_kernel(Image &img, sycl::queue &q, Image &img_out) {
+void ConvolutionOp::apply_kernel(Image &img, Image &img_out, sycl::queue &q) {
   const int channels = 4;
   const int img_w = img.width;
   const int img_h = img.height;

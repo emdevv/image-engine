@@ -95,7 +95,7 @@ void BlurOp::apply_native(Image &img, Image &img_out) {
   img_out.height = img.height;
 }
 
-void BlurOp::apply_kernel(Image &img, sycl::queue &q, Image &img_out) {
+void BlurOp::apply_kernel(Image &img, Image &img_out, sycl::queue &q) {
   const int channels = 4;
 
   if (percentage == 0) {

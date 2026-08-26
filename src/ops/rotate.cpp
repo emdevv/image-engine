@@ -66,7 +66,7 @@ void RotateOp::apply_native(Image &img, Image &img_out) {
   img_out.height = new_h;
 }
 
-void RotateOp::apply_kernel(Image &img, sycl::queue &q, Image &img_out) {
+void RotateOp::apply_kernel(Image &img, Image &img_out, sycl::queue &q) {
 
   // Normalize angle
   int local_angle = ((angle % 360) + 360) % 360;
