@@ -37,7 +37,6 @@ void run_operations(const AppContext &ctx) {
   Executor myExe(ctx.type);
   Image img = load_image(ctx.filepath);
   Image out;
-  std::string path = "/home/emi/projects/image-engine/output/output.png";
 
   display_image(img);
 
@@ -52,5 +51,5 @@ void run_operations(const AppContext &ctx) {
   }
 
   display_image(out);
-  save_image(path, out);
+  save_image(out);
 }

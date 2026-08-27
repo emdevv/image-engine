@@ -30,7 +30,7 @@ void BlurOp::apply_native(Image &img, Image &img_out) {
 
   auto start = std::chrono::high_resolution_clock::now();
 
-  // PASS 1: Horizontal Blur (img.pixels -> temp_pixels)
+  // Pass 1 -- Horizontal Blur (img.pixels -> temp_pixels)
   for (int y = 0; y < img.height; ++y) {
     for (int x = 0; x < img.width; ++x) {
       int sum_r = 0, sum_g = 0, sum_b = 0, sum_a = 0;
@@ -57,7 +57,7 @@ void BlurOp::apply_native(Image &img, Image &img_out) {
     }
   }
 
-  // PASS 2: Vertical Blur (temp_pixels -> blurred_pixels)
+  // Pass 2 -- Vertical Blur (temp_pixels -> blurred_pixels)
   for (int y = 0; y < img.height; ++y) {
     for (int x = 0; x < img.width; ++x) {
       int sum_r = 0, sum_g = 0, sum_b = 0, sum_a = 0;
@@ -120,14 +120,14 @@ void BlurOp::apply_kernel(Image &img, Image &img_out, sycl::queue &q) {
   const int r = radius;
 
   std::vector<unsigned char> temp_pixels(img.pixels.size());
-  std::vector<unsigned char> blurred_pixels(img.pixels.size()); // <--- 1. Am creat bufferul de ieșire
+  std::vector<unsigned char> blurred_pixels(img.pixels.size());
 
   {
     sycl::buffer<unsigned char, 1> in_buf(img.pixels.data(), sycl::range<1>(img.pixels.size()));
     sycl::buffer<unsigned char, 1> tmp_buf(temp_pixels.data(), sycl::range<1>(temp_pixels.size()));
     sycl::buffer<unsigned char, 1> out_buf(blurred_pixels.data(), sycl::range<1>(blurred_pixels.size())); // <--- 2. Buffer dedicat pentru out
 
-    // --- PASS 1: Horizontal Blur (in -> tmp) ---
+    // Pass 1 -- Horizontal Blur (in -> tmp)
     sycl::event e1 = q.submit([&](sycl::handler &cgh) {
       auto in = in_buf.get_access<sycl::access::mode::read>(cgh);
       auto tmp = tmp_buf.get_access<sycl::access::mode::write>(cgh);
@@ -154,10 +154,10 @@ void BlurOp::apply_kernel(Image &img, Image &img_out, sycl::queue &q) {
       });
     });
 
-    // --- PASS 2: Vertical Blur (tmp -> out) ---
+    // Pass 2 -- Vertical Blur (tmp -> out)
     sycl::event e2 = q.submit([&](sycl::handler &cgh) {
       auto tmp = tmp_buf.get_access<sycl::access::mode::read>(cgh);
-      auto out = out_buf.get_access<sycl::access::mode::write>(cgh); // <--- Scriem în out_buf
+      auto out = out_buf.get_access<sycl::access::mode::write>(cgh);
 
       cgh.parallel_for(sycl::range<2>(img_h, img_w), [=](sycl::id<2> idx) {
         int y = idx[0];

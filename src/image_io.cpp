@@ -62,20 +62,24 @@ Image load_image(const std::string &filepath) {
   return img;
 }
 
-void save_image(const std::string &filepath, const Image &img) {
+void save_image(const Image &img, const std::string &filename) {
   if (img.pixels.empty() || img.width <= 0 || img.height <= 0) {
     throw std::runtime_error("Empty image, abort!");
   }
 
-  std::filesystem::path path(filepath);
-  if (path.has_parent_path()) {
-    std::filesystem::create_directories(path.parent_path());
+  std::filesystem::path output_dir = "output";
+  std::filesystem::path full_path = output_dir / filename;
+
+  std::filesystem::create_directories(output_dir);
+
+  if (std::filesystem::exists(full_path)) {
+    std::filesystem::remove(full_path);
   }
 
   sf::Image sfml_img;
   sfml_img.create(img.width, img.height, img.pixels.data());
 
-  if (!sfml_img.saveToFile(filepath)) {
-    throw std::runtime_error("Saving error in: " + filepath);
+  if (!sfml_img.saveToFile(full_path.string())) {
+    throw std::runtime_error("Saving error in: " + full_path.string());
   }
 }
