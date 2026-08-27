@@ -8,7 +8,7 @@
 #include <vector>
 #include <print>
 
-void ConvolutionOp::apply_native(Image &img) {
+void ConvolutionOp::apply_native(Image &img, Image &img_out) {
   const int channels = 4;
 
   int kh = kernel.size();
@@ -64,10 +64,12 @@ void ConvolutionOp::apply_native(Image &img) {
 
   std::cout << "[Profiling][Native CPU] ConvolutionOp execution time: " << duration.count() << " ms" << std::endl;
 
-  img.pixels = std::move(out);
+  img_out.pixels = std::move(out);
+  img_out.width = img.width;
+  img_out.height = img.height;
 }
 
-void ConvolutionOp::apply_kernel(Image &img, sycl::queue &q) {
+void ConvolutionOp::apply_kernel(Image &img, Image &img_out, sycl::queue &q) {
   const int channels = 4;
   const int img_w = img.width;
   const int img_h = img.height;
@@ -129,5 +131,7 @@ void ConvolutionOp::apply_kernel(Image &img, sycl::queue &q) {
     std::print("[Profiling][{}] ConvolutionOp execution time: {} ms \n", q.get_device().get_info<sycl::info::device::name>(), duration_ms);
   }
 
-  img.pixels = std::move(out);
+  img_out.pixels = std::move(out);
+  img_out.width = img.width;
+  img_out.height = img.height;
 }

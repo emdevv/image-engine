@@ -1,11 +1,9 @@
 #include "engine_config.h"
 #include "image.h"
-#include "load_image.h"
-#include "display_image.h"
+#include "image_io.h"
 #include "ops.h"
 #include "executor.h"
 #include "types.h"
-#include <print>
 
 void setup_cli(CLI::App &app, AppContext &ctx) {
   app.require_subcommand(1);
@@ -38,18 +36,20 @@ void run_operations(const AppContext &ctx) {
 
   Executor myExe(ctx.type);
   Image img = load_image(ctx.filepath);
+  Image out;
 
   display_image(img);
 
   if (ctx.crop_cmd->parsed()) {
-    myExe.execute(img, CropOp(ctx.cx, ctx.cy, ctx.cw, ctx.ch));
+    out = myExe.execute(img, CropOp(ctx.cx, ctx.cy, ctx.cw, ctx.ch));
   } else if (ctx.blur_cmd->parsed()) {
-    myExe.execute(img, BlurOp(ctx.blur_percentage));
+    out = myExe.execute(img, BlurOp(ctx.blur_percentage));
   } else if (ctx.rotate_cmd->parsed()) {
-    myExe.execute(img, RotateOp(ctx.rotate_angle));
+    out = myExe.execute(img, RotateOp(ctx.rotate_angle));
   } else if (ctx.conv_cmd->parsed()) {
-    myExe.execute(img, ConvolutionOp(kernel));
+    out = myExe.execute(img, ConvolutionOp(kernel));
   }
 
-  display_image(img);
+  display_image(out);
+  save_image(out);
 }

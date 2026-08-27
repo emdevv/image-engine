@@ -7,7 +7,7 @@
 #include <vector>
 #include <print>
 
-void CropOp::apply_native(Image &img) {
+void CropOp::apply_native(Image &img, Image &img_out) {
   const int channels = 4;
   if (crop_x + crop_w > img.width || crop_y + crop_h > img.height || crop_x < 0 || crop_y < 0) {
     throw std::out_of_range("Crop region goes out of the image boundaries!");
@@ -40,12 +40,12 @@ void CropOp::apply_native(Image &img) {
 
   std::cout << "[Profiling][Native CPU] CropOp execution time: " << duration.count() << " ms" << std::endl;
 
-  img.pixels = std::move(crepped_pixels);
-  img.width = crop_w;
-  img.height = crop_h;
+  img_out.pixels = std::move(crepped_pixels);
+  img_out.width = crop_w;
+  img_out.height = crop_h;
 }
 
-void CropOp::apply_kernel(Image &img, sycl::queue &q) {
+void CropOp::apply_kernel(Image &img, Image &img_out, sycl::queue &q) {
   const int channels = 4;
 
   if (crop_x + crop_w > img.width || crop_y + crop_h > img.height || crop_x < 0 || crop_y < 0) {
@@ -93,7 +93,7 @@ void CropOp::apply_kernel(Image &img, sycl::queue &q) {
     std::print("[Profiling][{}] CropOp execution time: {} ms \n", q.get_device().get_info<sycl::info::device::name>(), duration_ms);
   }
 
-  img.pixels = std::move(cropped_pixels);
-  img.width = c_w;
-  img.height = c_h;
+  img_out.pixels = std::move(cropped_pixels);
+  img_out.width = c_w;
+  img_out.height = c_h;
 }
