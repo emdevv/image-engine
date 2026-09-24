@@ -15,8 +15,10 @@ void RotateOp::apply_native(Image &img, Image &img_out) {
     throw std::invalid_argument("Only 90, 180, and 270 degree rotations are supported right now!");
   }
 
-  if (angle == 0)
-    return; // Nothing to do
+  if (angle == 0) {
+    img_out = img;
+    return;
+  }
 
   const int channels = 4;
   int new_w = (angle == 180) ? img.width : img.height;
@@ -58,7 +60,7 @@ void RotateOp::apply_native(Image &img, Image &img_out) {
 
   std::chrono::duration<double, std::milli> duration = end - start;
 
-  std::cout << "[Profiling][Native CPU] RotateOp execution time: " << duration.count() << " ms" << std::endl;
+  std::print("[Profiling][Native CPU] RotateOp execution time: {} ms \n", duration.count());
 
   // Update the image object
   img_out.pixels = std::move(rotated_pixels);
@@ -70,8 +72,11 @@ void RotateOp::apply_kernel(Image &img, Image &img_out, sycl::queue &q) {
 
   // Normalize angle
   int local_angle = ((angle % 360) + 360) % 360;
-  if (local_angle == 0)
+
+  if (local_angle == 0) {
+    img_out = img;
     return;
+  }
 
   // Setup Dimensions
   const int channels = 4;

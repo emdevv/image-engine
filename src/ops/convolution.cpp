@@ -62,7 +62,7 @@ void ConvolutionOp::apply_native(Image &img, Image &img_out) {
 
   std::chrono::duration<double, std::milli> duration = end - start;
 
-  std::cout << "[Profiling][Native CPU] ConvolutionOp execution time: " << duration.count() << " ms" << std::endl;
+  std::print("[Profiling][Native CPU] ConvolutionOp execution time: {} ms \n", duration.count());
 
   img_out.pixels = std::move(out);
   img_out.width = img.width;

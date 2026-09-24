@@ -5,12 +5,15 @@
 #include <algorithm>
 #include <print>
 #include <vector>
+#include <chrono>
 #include <print>
 
 void BlurOp::apply_native(Image &img, Image &img_out) {
   const int channels = 4;
-  if (percentage == 0)
+  if (percentage == 0) {
+    img_out = img;
     return;
+  }
 
   if (percentage > 100)
     percentage = 100;
@@ -88,7 +91,7 @@ void BlurOp::apply_native(Image &img, Image &img_out) {
 
   std::chrono::duration<double, std::milli> duration = end - start;
 
-  std::cout << "[Profiling][Native CPU] BlurOp execution time: " << duration.count() << " ms" << std::endl;
+  std::print("[Profiling][Native CPU] BlurOp execution time: {} ms \n", duration.count());
 
   img_out.pixels = std::move(blurred_pixels);
   img_out.width = img.width;
