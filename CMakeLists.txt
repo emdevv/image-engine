@@ -26,7 +26,7 @@ target_include_directories(image_engine_core PUBLIC
 
 add_sycl_to_target(TARGET image_engine_core)
 
-target_link_libraries(image_engine_core PRIVATE
+target_link_libraries(image_engine_core PUBLIC
     sfml-graphics sfml-window sfml-system
 )
 

@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <stdexcept>
 #include <vector>
+#include <chrono>
 #include <print>
 
 void CropOp::apply_native(Image &img, Image &img_out) {
@@ -38,7 +39,7 @@ void CropOp::apply_native(Image &img, Image &img_out) {
 
   std::chrono::duration<double, std::milli> duration = end - start;
 
-  std::cout << "[Profiling][Native CPU] CropOp execution time: " << duration.count() << " ms" << std::endl;
+  std::print("[Profiling][Native CPU] CropOp execution time: {} ms \n", duration.count());
 
   img_out.pixels = std::move(crepped_pixels);
   img_out.width = crop_w;
