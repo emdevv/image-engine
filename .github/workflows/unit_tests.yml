@@ -1,0 +1,25 @@
+name: Unit Tests
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build-and-test-unit:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build Docker/Podman image locally in CI
+        run: docker build -t image-engine-ci .
+
+      - name: Run build and unit tests inside container
+        run: |
+          docker run --rm -v ${{ github.workspace }}:/workspace:z image-engine-ci bash -c "
+            source /opt/intel/oneapi/setvars.sh --force &&
+            cmake -S /workspace -B /workspace/build -DCMAKE_CXX_COMPILER=icpx -DCMAKE_BUILD_TYPE=RelWithDebInfo &&
+            cmake --build /workspace/build --parallel $(nproc) &&
+            /workspace/build/unittests --gtest_filter='-SYCL_GPU.*'
+          "
